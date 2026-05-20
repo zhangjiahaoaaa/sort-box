@@ -32,10 +32,10 @@ export default function CourseDetailPage() {
 
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="secondary">
-          <Link href="/add/material">添加这门课的资料</Link>
+          <Link href={`/add/material?courseId=${course.id}`}>添加这门课的资料</Link>
         </Button>
         <Button asChild>
-          <Link href="/add/notice">粘贴这门课的通知</Link>
+          <Link href={`/add/notice?courseId=${course.id}`}>粘贴这门课的通知</Link>
         </Button>
       </div>
 

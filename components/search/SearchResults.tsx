@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { TagList } from "@/components/common/TagList"
 import { materialTypeLabels } from "@/lib/constants"
 import type { AppData, SearchResultGroup } from "@/lib/types"
@@ -42,6 +43,7 @@ export function SearchResults({ data, results }: SearchResultsProps) {
           const course = data.courses.find((item) => item.id === material.courseId)
           return (
             <ResultLink key={material.id} href={`/courses/${material.courseId}`}>
+              <Badge variant="default">资料</Badge>
               <p className="font-medium text-slate-950">{material.fileName}</p>
               <p className="text-sm text-slate-500">
                 {course?.name || "未知课程"} · {materialTypeLabels[material.type]}
@@ -59,6 +61,7 @@ export function SearchResults({ data, results }: SearchResultsProps) {
           const course = data.courses.find((item) => item.id === todo.courseId)
           return (
             <ResultLink key={todo.id} href={`/courses/${todo.courseId}`}>
+              <Badge variant="warning">待办</Badge>
               <p className="font-medium text-slate-950">{todo.title}</p>
               <p className="text-sm text-slate-500">{course?.name || "未知课程"}</p>
               <div className="mt-2">
@@ -74,6 +77,7 @@ export function SearchResults({ data, results }: SearchResultsProps) {
           const course = data.courses.find((item) => item.id === notice.courseId)
           return (
             <ResultLink key={notice.id} href={`/courses/${notice.courseId}`}>
+              <Badge variant="muted">通知</Badge>
               <p className="font-medium text-slate-950">{notice.extractedTitle}</p>
               <p className="line-clamp-2 text-sm leading-6 text-slate-500">
                 {course?.name || "未知课程"} · {notice.rawText}

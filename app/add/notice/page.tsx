@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,6 +19,15 @@ export default function AddNoticePage() {
   const [courseId, setCourseId] = useState("")
   const [rawText, setRawText] = useState("")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const queryCourseId = new URLSearchParams(window.location.search).get("courseId")
+      if (queryCourseId) {
+        setCourseId(queryCourseId)
+      }
+    })
+  }, [])
 
   if (!isReady || !data) {
     return <p className="text-sm text-slate-500">正在准备通知识别...</p>

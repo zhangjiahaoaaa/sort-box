@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,12 @@ import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/common/PageHeader"
+import { Badge } from "@/components/ui/badge"
 import { materialTypeLabels, materialTypes } from "@/lib/constants"
+import {
+  recognizeMaterialFileName,
+  type MaterialRecognitionDraft,
+} from "@/lib/material-recognition"
 import { createId, nowIso, parseTags } from "@/lib/utils"
 import { useAppData } from "@/hooks/useAppData"
 import type { MaterialType } from "@/lib/types"
@@ -24,6 +29,16 @@ export default function AddMaterialPage() {
   const [tags, setTags] = useState("")
   const [note, setNote] = useState("")
   const [error, setError] = useState("")
+  const [recognition, setRecognition] = useState<MaterialRecognitionDraft | null>(null)
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const queryCourseId = new URLSearchParams(window.location.search).get("courseId")
+      if (queryCourseId) {
+        setCourseId(queryCourseId)
+      }
+    })
+  }, [])
 
   if (!isReady || !data) {
     return <p className="text-sm text-slate-500">正在准备资料表单...</p>
@@ -44,6 +59,24 @@ export default function AddMaterialPage() {
   }
 
   const courses = data.courses
+
+  function handleFileChange(file?: File) {
+    const nextFileName = file?.name || ""
+    setFileName(nextFileName)
+    setRecognition(null)
+
+    if (!nextFileName) {
+      return
+    }
+
+    const draft = recognizeMaterialFileName(nextFileName, courses)
+    setRecognition(draft)
+    if (!courseId && draft.courseId) {
+      setCourseId(draft.courseId)
+    }
+    setType(draft.type)
+    setTags(draft.tags.join("，"))
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -98,11 +131,31 @@ export default function AddMaterialPage() {
               <span className="text-sm font-medium text-slate-700">选择文件</span>
               <Input
                 type="file"
-                onChange={(event) => setFileName(event.target.files?.[0]?.name || "")}
+                onChange={(event) => handleFileChange(event.target.files?.[0])}
               />
               <p className="text-xs text-slate-500">
                 当前文件名：{fileName || "尚未选择文件"}
               </p>
+              {recognition ? (
+                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <Badge variant={recognition.courseId ? "success" : "warning"}>
+                    {recognition.courseId
+                      ? `推荐课程：${
+                          courses.find((course) => course.id === recognition.courseId)
+                            ?.name || "未知课程"
+                        }`
+                      : "未识别课程"}
+                  </Badge>
+                  <Badge variant={recognition.confidenceFlags.typeUncertain ? "warning" : "muted"}>
+                    推荐类型：{materialTypeLabels[recognition.type]}
+                  </Badge>
+                  {recognition.tags.length ? (
+                    <Badge variant="muted">推荐标签：{recognition.tags.join("，")}</Badge>
+                  ) : (
+                    <Badge variant="warning">未识别标签</Badge>
+                  )}
+                </div>
+              ) : null}
             </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
