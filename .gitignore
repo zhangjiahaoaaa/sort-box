@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+dist/
+
+# local env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# testing and temporary files
+.tmp-*/
+coverage/
+
+# accidental TypeScript emit
+lib/*.js
+
+# system
+.DS_Store
+Thumbs.db
