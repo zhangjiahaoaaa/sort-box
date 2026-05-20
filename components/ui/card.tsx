@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 export function Card({
@@ -41,7 +42,9 @@ export function CardDescription({
 
 export function CardContent({
   className,
+  asChild,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-5 pt-0", className)} {...props} />
+}: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }) {
+  const Component = asChild ? Slot : "div"
+  return <Component className={cn("p-5 pt-0", className)} {...props} />
 }

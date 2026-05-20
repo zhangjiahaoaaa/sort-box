@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
-import { BookOpen, FilePlus2, Inbox } from "lucide-react"
+import { FilePlus2, Inbox } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/common/PageHeader"
 import { DashboardStats } from "@/components/dashboard/DashboardStats"
@@ -37,12 +37,6 @@ export default function DashboardPage() {
         action={
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
-              <Link href="/courses">
-                <BookOpen className="h-4 w-4" />
-                管理课程
-              </Link>
-            </Button>
-            <Button asChild variant="secondary">
               <Link href="/add/material">
                 <FilePlus2 className="h-4 w-4" />
                 添加资料
@@ -66,8 +60,12 @@ export default function DashboardPage() {
         <>
           <DashboardStats data={data} />
           <div className="grid gap-4 xl:grid-cols-2">
-            <UpcomingTodos todos={data.todos} onToggle={toggleTodo} />
-            <RecentMaterials materials={data.materials} />
+            <section id="ddl-list" className="scroll-mt-24">
+              <UpcomingTodos todos={data.todos} onToggle={toggleTodo} />
+            </section>
+            <section id="recent-materials" className="scroll-mt-24">
+              <RecentMaterials materials={data.materials} />
+            </section>
           </div>
           <section className="space-y-4">
             <h2 className="text-lg font-semibold text-slate-950">课程概览</h2>
