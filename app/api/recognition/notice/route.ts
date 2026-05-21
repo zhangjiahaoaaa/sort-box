@@ -89,14 +89,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ draft: mockDraft, provider: "mock" })
   }
 
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
+  const aiConfig = getAiConfig()
+  if (!aiConfig) {
     return NextResponse.json({ draft: mockDraft, provider: "mock" })
   }
 
   try {
     const aiResult = await recognizeNoticeWithOpenAI({
-      apiKey,
+      ...aiConfig,
       rawText,
       courses,
       referenceDate,
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         courses,
         selectedCourseId: body.selectedCourseId,
       }),
-      provider: "openai",
+      provider: aiConfig.provider,
     })
   } catch {
     return NextResponse.json({ draft: mockDraft, provider: "mock" })
@@ -119,17 +119,20 @@ export async function POST(request: NextRequest) {
 
 async function recognizeNoticeWithOpenAI({
   apiKey,
+  baseUrl,
+  model,
   rawText,
   courses,
   referenceDate,
 }: {
   apiKey: string
+  baseUrl: string
+  model: string
   rawText: string
   courses: Course[]
   referenceDate: Date
 }) {
-  const model = process.env.OPENAI_NOTICE_MODEL || "gpt-4o-mini"
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -142,7 +145,7 @@ async function recognizeNoticeWithOpenAI({
         {
           role: "system",
           content:
-            "你是大学课程通知识别器。只从用户提供的通知中提取信息，必须返回符合 JSON Schema 的 JSON。AI 只提供建议，字段不确定时 needsReview=true，不要编造不存在的信息。",
+            "你是大学课程通知识别器。只从用户提供的通知中提取信息，必须返回 JSON。AI 只提供建议，字段不确定时 needsReview=true，不要编造不存在的信息。",
         },
         {
           role: "user",
@@ -153,14 +156,7 @@ async function recognizeNoticeWithOpenAI({
           }),
         },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "course_notice_recognition",
-          strict: true,
-          schema: noticeRecognitionSchema,
-        },
-      },
+      response_format: buildResponseFormat(model),
     }),
   })
 
@@ -177,6 +173,49 @@ async function recognizeNoticeWithOpenAI({
   }
 
   return JSON.parse(content) as AiNoticeResult
+}
+
+function buildResponseFormat(model: string) {
+  if (model.startsWith("deepseek")) {
+    return {
+      type: "json_object",
+    }
+  }
+
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "course_notice_recognition",
+      strict: true,
+      schema: noticeRecognitionSchema,
+    },
+  }
+}
+
+function getAiConfig() {
+  const preferredProvider = process.env.NOTICE_AI_PROVIDER?.toLowerCase()
+  const deepSeekKey = process.env.DEEPSEEK_API_KEY
+  const openAiKey = process.env.OPENAI_API_KEY
+
+  if ((preferredProvider === "deepseek" || !preferredProvider) && deepSeekKey) {
+    return {
+      provider: "deepseek",
+      apiKey: deepSeekKey,
+      baseUrl: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com",
+      model: process.env.DEEPSEEK_NOTICE_MODEL || "deepseek-chat",
+    }
+  }
+
+  if ((preferredProvider === "openai" || !preferredProvider) && openAiKey) {
+    return {
+      provider: "openai",
+      apiKey: openAiKey,
+      baseUrl: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+      model: process.env.OPENAI_NOTICE_MODEL || "gpt-4o-mini",
+    }
+  }
+
+  return null
 }
 
 function mapAiResultToDraft({
