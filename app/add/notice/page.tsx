@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/common/PageHeader"
-import { recognizeNotice } from "@/lib/recognition"
+import { recognitionProvider } from "@/lib/recognition/provider"
 import { writeRecognitionDraft } from "@/lib/storage"
 import { useAppData } from "@/hooks/useAppData"
 
@@ -56,7 +56,11 @@ export default function AddNoticePage() {
       return
     }
 
-    const draft = recognizeNotice(rawText, courses, courseId || undefined)
+    const draft = recognitionProvider.recognizeNotice({
+      rawText,
+      courses,
+      selectedCourseId: courseId || undefined,
+    })
     writeRecognitionDraft(draft)
     router.push("/recognition/confirm")
   }

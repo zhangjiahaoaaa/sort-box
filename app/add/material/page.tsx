@@ -13,10 +13,8 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/common/PageHeader"
 import { Badge } from "@/components/ui/badge"
 import { materialTypeLabels, materialTypes } from "@/lib/constants"
-import {
-  recognizeMaterialFileName,
-  type MaterialRecognitionDraft,
-} from "@/lib/material-recognition"
+import type { MaterialRecognitionDraft } from "@/lib/material-recognition"
+import { recognitionProvider } from "@/lib/recognition/provider"
 import { createId, nowIso, parseTags } from "@/lib/utils"
 import { useAppData } from "@/hooks/useAppData"
 import type { MaterialType } from "@/lib/types"
@@ -71,7 +69,10 @@ export default function AddMaterialPage() {
       return
     }
 
-    const draft = recognizeMaterialFileName(nextFileName, courses)
+    const draft = recognitionProvider.recognizeMaterialFileName({
+      fileName: nextFileName,
+      courses,
+    })
     setRecognition(draft)
     if (!courseId && draft.courseId) {
       setCourseId(draft.courseId)
