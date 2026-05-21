@@ -16,7 +16,7 @@ const typeRules: Array<{
   keywords: string[]
 }> = [
   { type: "homework", keywords: ["作业", "实验", "报告", "模板", "习题"] },
-  { type: "courseware", keywords: ["课件", "ppt", "讲义", "上课", "课堂"] },
+  { type: "courseware", keywords: ["课件", "ppt", "pptx", "讲义", "上课", "课堂"] },
   { type: "review", keywords: ["复习", "重点", "提纲", "总结", "整理"] },
   { type: "exam", keywords: ["考试", "期末", "期中", "真题", "试卷"] },
   { type: "reading", keywords: ["阅读", "论文", "文献", "资料"] },

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { FormEvent, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -59,6 +60,7 @@ export default function AddMaterialPage() {
   }
 
   const courses = data.courses
+  const selectedCourseName = courses.find((course) => course.id === courseId)?.name
 
   function handleFileChange(file?: File) {
     const nextFileName = file?.name || ""
@@ -129,22 +131,45 @@ export default function AddMaterialPage() {
 
             <label className="block space-y-2">
               <span className="text-sm font-medium text-slate-700">选择文件</span>
-              <Input
-                type="file"
-                onChange={(event) => handleFileChange(event.target.files?.[0])}
-              />
-              <p className="text-xs text-slate-500">
-                当前文件名：{fileName || "尚未选择文件"}
-              </p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <input
+                    id="material-file-input"
+                    type="file"
+                    className="sr-only"
+                    onChange={(event) => handleFileChange(event.target.files?.[0])}
+                  />
+                  <label
+                    htmlFor="material-file-input"
+                    className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  >
+                    <Upload className="h-4 w-4" />
+                    选择文件
+                  </label>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-500">当前文件名</p>
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {fileName || "尚未选择文件"}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-slate-500">
+                  这里只读取文件名用于推荐课程、类型和标签，不会上传或保存文件内容。
+                </p>
+              </div>
               {recognition ? (
                 <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                  <Badge variant={recognition.courseId ? "success" : "warning"}>
+                  <Badge
+                    variant={recognition.courseId || selectedCourseName ? "success" : "warning"}
+                  >
                     {recognition.courseId
                       ? `推荐课程：${
                           courses.find((course) => course.id === recognition.courseId)
                             ?.name || "未知课程"
                         }`
-                      : "未识别课程"}
+                      : selectedCourseName
+                        ? `已使用课程：${selectedCourseName}`
+                        : "文件名未识别课程"}
                   </Badge>
                   <Badge variant={recognition.confidenceFlags.typeUncertain ? "warning" : "muted"}>
                     推荐类型：{materialTypeLabels[recognition.type]}
