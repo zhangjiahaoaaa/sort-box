@@ -16,14 +16,14 @@ export type RecognizeMaterialFileNameInput = {
 }
 
 export type RecognitionProvider = {
-  recognizeNotice(input: RecognizeNoticeInput): RecognitionDraft
+  recognizeNotice(input: RecognizeNoticeInput): Promise<RecognitionDraft>
   recognizeMaterialFileName(
     input: RecognizeMaterialFileNameInput,
-  ): MaterialRecognitionDraft
+  ): Promise<MaterialRecognitionDraft>
 }
 
 export const MockRecognitionProvider: RecognitionProvider = {
-  recognizeNotice(input) {
+  async recognizeNotice(input) {
     return recognizeNotice(
       input.rawText,
       input.courses,
@@ -31,9 +31,39 @@ export const MockRecognitionProvider: RecognitionProvider = {
       input.referenceDate,
     )
   },
-  recognizeMaterialFileName(input) {
+  async recognizeMaterialFileName(input) {
     return recognizeMaterialFileName(input.fileName, input.courses)
   },
 }
 
-export const recognitionProvider: RecognitionProvider = MockRecognitionProvider
+export const AiNoticeRecognitionProvider: RecognitionProvider = {
+  async recognizeNotice(input) {
+    try {
+      const response = await fetch("/api/recognition/notice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      })
+
+      if (!response.ok) {
+        throw new Error("AI recognition request failed")
+      }
+
+      const payload = (await response.json()) as { draft?: RecognitionDraft }
+      if (!payload.draft) {
+        throw new Error("AI recognition response missing draft")
+      }
+
+      return payload.draft
+    } catch {
+      return MockRecognitionProvider.recognizeNotice(input)
+    }
+  },
+  recognizeMaterialFileName(input) {
+    return MockRecognitionProvider.recognizeMaterialFileName(input)
+  },
+}
+
+export const recognitionProvider: RecognitionProvider = AiNoticeRecognitionProvider

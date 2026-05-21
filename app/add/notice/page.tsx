@@ -19,6 +19,7 @@ export default function AddNoticePage() {
   const [courseId, setCourseId] = useState("")
   const [rawText, setRawText] = useState("")
   const [error, setError] = useState("")
+  const [isRecognizing, setIsRecognizing] = useState(false)
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -49,20 +50,28 @@ export default function AddNoticePage() {
 
   const courses = data.courses
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!rawText.trim()) {
       setError("请粘贴一段群通知。")
       return
     }
 
-    const draft = recognitionProvider.recognizeNotice({
-      rawText,
-      courses,
-      selectedCourseId: courseId || undefined,
-    })
-    writeRecognitionDraft(draft)
-    router.push("/recognition/confirm")
+    setIsRecognizing(true)
+    setError("")
+    try {
+      const draft = await recognitionProvider.recognizeNotice({
+        rawText,
+        courses,
+        selectedCourseId: courseId || undefined,
+      })
+      writeRecognitionDraft(draft)
+      router.push("/recognition/confirm")
+    } catch {
+      setError("识别失败，请稍后重试，或先保留原文手动填写。")
+    } finally {
+      setIsRecognizing(false)
+    }
   }
 
   return (
@@ -101,7 +110,9 @@ export default function AddNoticePage() {
             </label>
 
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <Button type="submit">识别通知</Button>
+            <Button type="submit" disabled={isRecognizing}>
+              {isRecognizing ? "正在识别..." : "识别通知"}
+            </Button>
           </form>
         </CardContent>
       </Card>

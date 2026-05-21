@@ -60,7 +60,7 @@ export default function AddMaterialPage() {
   const courses = data.courses
   const selectedCourseName = courses.find((course) => course.id === courseId)?.name
 
-  function handleFileChange(file?: File) {
+  async function handleFileChange(file?: File) {
     const nextFileName = file?.name || ""
     setFileName(nextFileName)
     setRecognition(null)
@@ -69,7 +69,7 @@ export default function AddMaterialPage() {
       return
     }
 
-    const draft = recognitionProvider.recognizeMaterialFileName({
+    const draft = await recognitionProvider.recognizeMaterialFileName({
       fileName: nextFileName,
       courses,
     })
