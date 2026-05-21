@@ -1,11 +1,18 @@
-import { FileText } from "lucide-react"
+import { FileText, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { TagList } from "@/components/common/TagList"
 import { materialTypeLabels } from "@/lib/constants"
 import { formatDate } from "@/lib/date"
 import type { Material } from "@/lib/types"
 
-export function MaterialItem({ material }: { material: Material }) {
+export function MaterialItem({
+  material,
+  onDelete,
+}: {
+  material: Material
+  onDelete?: (materialId: string) => void
+}) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex items-start gap-3">
@@ -18,6 +25,22 @@ export function MaterialItem({ material }: { material: Material }) {
               {material.fileName}
             </p>
             <Badge>{materialTypeLabels[material.type]}</Badge>
+            {onDelete ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="ml-auto text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => {
+                  if (window.confirm(`确定删除资料「${material.fileName}」吗？`)) {
+                    onDelete(material.id)
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                删除
+              </Button>
+            ) : null}
           </div>
           <p className="mt-1 text-xs text-slate-500">
             上传于 {formatDate(material.uploadedAt)}

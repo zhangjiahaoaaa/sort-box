@@ -5,9 +5,11 @@ import type { Todo } from "@/lib/types"
 export function UpcomingTodos({
   todos,
   onToggle,
+  onDelete,
 }: {
   todos: Todo[]
   onToggle: (todoId: string) => void
+  onDelete?: (todoId: string) => void
 }) {
   const groups = groupTodosByDeadline(todos)
 
@@ -29,14 +31,19 @@ export function UpcomingTodos({
                 </div>
                 <div className="space-y-2">
                   {group.todos.map((todo) => (
-                    <TodoItem key={todo.id} todo={todo} onToggle={onToggle} />
+                    <TodoItem
+                      key={todo.id}
+                      todo={todo}
+                      onToggle={onToggle}
+                      onDelete={onDelete}
+                    />
                   ))}
                 </div>
               </section>
             ) : null,
           )
         ) : (
-          <p className="text-sm text-slate-500">暂时没有待完成的 DDL。</p>
+          <p className="text-sm text-slate-500">暂无待办。</p>
         )}
       </CardContent>
     </Card>

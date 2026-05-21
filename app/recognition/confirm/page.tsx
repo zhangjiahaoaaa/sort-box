@@ -183,7 +183,7 @@ export default function RecognitionConfirmPage() {
                   <FieldHint
                     sourceText={currentDraft.deadlineSourceText}
                     uncertain={currentDraft.confidenceFlags?.deadlineUncertain}
-                    fallback="没有识别到截止时间，可以手动补充。"
+                    fallback="没有识别到截止时间，通知原文已保留，可以手动补充或留空。"
                   />
                 </label>
                 <label className="block space-y-2">

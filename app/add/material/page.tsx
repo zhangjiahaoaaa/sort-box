@@ -48,11 +48,11 @@ export default function AddMaterialPage() {
   if (!data.courses.length) {
     return (
       <EmptyState
-        title="请先创建课程"
-        description="资料需要归到具体课程里。先建一门课，再回来添加资料。"
+        title="创建第一门课"
+        description="资料需要归到具体课程里。先创建课程，再回来添加第一份资料。"
         action={
           <Button asChild>
-            <Link href="/courses">去创建课程</Link>
+            <Link href="/courses">创建第一门课</Link>
           </Button>
         }
       />

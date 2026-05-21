@@ -22,7 +22,7 @@ export function SearchResults({ data, results }: SearchResultsProps) {
     return (
       <EmptyState
         title="没有找到匹配结果"
-        description="试试课程名、文件名、标签、通知里的关键词，或者换一个更短的词。"
+        description="换个关键词试试，比如课程名、实验三、提交方式或通知里的原文。"
       />
     )
   }

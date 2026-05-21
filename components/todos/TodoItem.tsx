@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle } from "lucide-react"
+import { CheckCircle2, Circle, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DeadlineBadge } from "@/components/todos/DeadlineBadge"
 import { TagList } from "@/components/common/TagList"
@@ -7,9 +7,10 @@ import type { Todo } from "@/lib/types"
 type TodoItemProps = {
   todo: Todo
   onToggle?: (todoId: string) => void
+  onDelete?: (todoId: string) => void
 }
 
-export function TodoItem({ todo, onToggle }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
@@ -43,9 +44,26 @@ export function TodoItem({ todo, onToggle }: TodoItemProps) {
         </div>
       </div>
       {onToggle ? (
-        <Button variant="secondary" size="sm" onClick={() => onToggle(todo.id)}>
-          {todo.status === "done" ? "恢复待办" : "完成"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => onToggle(todo.id)}>
+            {todo.status === "done" ? "恢复待办" : "完成"}
+          </Button>
+          {onDelete ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => {
+                if (window.confirm(`确定删除待办「${todo.title}」吗？`)) {
+                  onDelete(todo.id)
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              删除
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   )

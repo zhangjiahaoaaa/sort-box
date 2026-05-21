@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { readAppData, writeAppData } from "@/lib/storage"
+import { readAppData, resetAppData, writeAppData } from "@/lib/storage"
 import type { AppData, Course, Material, Notice, Todo } from "@/lib/types"
 
 export function useAppData() {
@@ -65,6 +65,45 @@ export function useAppData() {
               }
             : current,
         )
+      },
+      deleteMaterial(materialId: string) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                materials: current.materials.filter(
+                  (material) => material.id !== materialId,
+                ),
+              }
+            : current,
+        )
+      },
+      deleteTodo(todoId: string) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                todos: current.todos.filter((todo) => todo.id !== todoId),
+              }
+            : current,
+        )
+      },
+      deleteCourse(courseId: string) {
+        setData((current) =>
+          current
+            ? {
+                courses: current.courses.filter((course) => course.id !== courseId),
+                materials: current.materials.filter(
+                  (material) => material.courseId !== courseId,
+                ),
+                todos: current.todos.filter((todo) => todo.courseId !== courseId),
+                notices: current.notices.filter((notice) => notice.courseId !== courseId),
+              }
+            : current,
+        )
+      },
+      resetDemoData() {
+        setData(resetAppData())
       },
     }),
     [],

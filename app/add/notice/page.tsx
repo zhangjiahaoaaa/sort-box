@@ -36,11 +36,11 @@ export default function AddNoticePage() {
   if (!data.courses.length) {
     return (
       <EmptyState
-        title="请先创建课程"
-        description="通知识别结果需要归到课程里。先建一门课，再粘贴群通知。"
+        title="创建第一门课"
+        description="通知识别结果需要归到课程里。先创建课程，再粘贴第一条群通知。"
         action={
           <Button asChild>
-            <Link href="/courses">去创建课程</Link>
+            <Link href="/courses">创建第一门课</Link>
           </Button>
         }
       />

@@ -38,8 +38,8 @@ export default function CoursesPage() {
             </div>
           ) : (
             <EmptyState
-              title="还没有课程"
-              description="先创建一门课，再开始添加资料或粘贴群通知。"
+              title="创建第一门课"
+              description="先创建课程，再开始添加资料或粘贴群通知。"
             />
           )}
         </section>
