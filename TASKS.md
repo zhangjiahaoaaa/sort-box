@@ -1,171 +1,136 @@
 # TASKS.md
 
-## Phase 0: Project Setup
+## Current MVP Status
 
-- [ ] Initialize Next.js project with TypeScript.
-- [ ] Install and configure Tailwind CSS.
-- [ ] Add shadcn/ui if setup is smooth.
-- [ ] Add lucide-react.
-- [ ] Define base app metadata.
-- [ ] Create initial folder structure.
-- [ ] Add global styles.
-- [ ] Confirm the dev server starts successfully.
+第一阶段目标已经完成：上传/粘贴 -> 识别确认 -> 归档 -> 搜索。
 
-## Phase 1: MVP Closed Loop
+当前版本额外完成了本地文件库、资料预览下载、课程删除、资料删除、演示数据重置、识别 provider 抽象、可选 AI 通知识别、期末救命搜索。
 
-Goal: complete upload/paste -> recognition confirmation -> archive -> search.
+## Done
+
+### Project Foundation
+
+- [x] Initialize Next.js project with TypeScript.
+- [x] Configure Tailwind CSS.
+- [x] Add lucide-react.
+- [x] Define base app metadata.
+- [x] Create app folder structure.
+- [x] Add global styles.
+- [x] Confirm dev server starts successfully.
 
 ### Data Foundation
 
-- [ ] Define `Course` type.
-- [ ] Define `Material` type.
-- [ ] Define `Todo` type.
-- [ ] Define `Notice` type.
-- [ ] Define `RecognitionDraft` type.
-- [ ] Define `AppData` type.
-- [ ] Create demo courses.
-- [ ] Create demo materials.
-- [ ] Create demo todos.
-- [ ] Create demo notices.
-- [ ] Implement localStorage read helper.
-- [ ] Implement localStorage write helper.
-- [ ] Implement demo data seeding when storage is empty.
-- [ ] Implement ID generation helper.
-- [ ] Implement timestamp helper.
+- [x] Define `Course`, `Material`, `Todo`, `Notice`, `RecognitionDraft`, `AppData`.
+- [x] Create demo courses, materials, todos, notices.
+- [x] Implement localStorage read/write helpers.
+- [x] Seed demo data when storage is empty.
+- [x] Add ID and timestamp helpers.
+- [x] Add IndexedDB file storage helper.
 
-### App Shell
+### Core App
 
-- [ ] Create root layout.
-- [ ] Create sidebar navigation.
-- [ ] Create topbar.
-- [ ] Add navigation links for Dashboard, courses, add material, and paste notice.
-- [ ] Add active navigation state.
-- [ ] Add responsive layout behavior.
-
-### Dashboard
-
-- [ ] Build Dashboard page.
-- [ ] Show total course count.
-- [ ] Show pending todo count.
-- [ ] Show upcoming DDL list.
-- [ ] Show recent materials list.
-- [ ] Show course overview section.
-- [ ] Add entry point to add material.
-- [ ] Add entry point to paste notice.
-
-### Courses
-
-- [ ] Build course list page.
-- [ ] Render demo and persisted courses.
-- [ ] Build course card component.
-- [ ] Add course creation form.
-- [ ] Save new course to localStorage.
-- [ ] Build course detail page.
-- [ ] Show course header.
-- [ ] Show materials for the selected course.
-- [ ] Show todos for the selected course.
-- [ ] Show notices for the selected course.
-- [ ] Add empty state for courses without data.
+- [x] Build Dashboard page.
+- [x] Build course list page.
+- [x] Build course detail page.
+- [x] Add course creation.
+- [x] Add course deletion with cascade cleanup.
+- [x] Add material list, todo list, notice list.
+- [x] Add empty states.
+- [x] Add demo data reset action.
 
 ### Materials
 
-- [ ] Build add material page.
-- [ ] Add course selector.
-- [ ] Add file name input.
-- [ ] Add material type selector.
-- [ ] Add tag input.
-- [ ] Add note input.
-- [ ] Validate required fields.
-- [ ] Save material metadata to localStorage.
-- [ ] Redirect or link to the related course detail after save.
-- [ ] Render saved material in course detail.
+- [x] Build add material page.
+- [x] Support course selector and query `courseId`.
+- [x] Save real file Blob to IndexedDB.
+- [x] Save material metadata to localStorage.
+- [x] Store `fileId`, `mimeType`, `fileSize`, `extractedText`.
+- [x] Mock-recognize material filename for course/type/tags.
+- [x] Suggest likely new course and allow one-click create.
+- [x] Add material preview page `/materials/[materialId]`.
+- [x] Preview PDF, image, and text files.
+- [x] Show unsupported preview state for Office files.
+- [x] Download files from IndexedDB.
+- [x] Delete materials and clean up IndexedDB file blobs.
 
-### Notices and Mock Recognition
+### Notices and Recognition
 
-- [ ] Build paste notice page.
-- [ ] Add raw notice textarea.
-- [ ] Add optional course selector.
-- [ ] Implement mock course recognition.
-- [ ] Implement mock title extraction.
-- [ ] Implement mock deadline extraction.
-- [ ] Implement mock submit method extraction.
-- [ ] Implement mock tag extraction.
-- [ ] Save recognition draft temporarily.
-- [ ] Navigate to recognition confirmation page.
-
-### Recognition Confirmation
-
-- [ ] Build recognition confirmation page.
-- [ ] Load recognition draft.
-- [ ] Make recognized course editable.
-- [ ] Make recognized title editable.
-- [ ] Make deadline editable.
-- [ ] Make submit method editable.
-- [ ] Make tags editable.
-- [ ] Show original notice text.
-- [ ] Confirm and create `Notice`.
-- [ ] Confirm and create linked `Todo`.
-- [ ] Persist archived data to localStorage.
-- [ ] Clear recognition draft after archive.
-- [ ] Show success state or navigate to course detail.
+- [x] Build paste notice page.
+- [x] Support optional course selector and query `courseId`.
+- [x] Implement mock course/title/deadline/submit method/tag recognition.
+- [x] Improve relative date handling.
+- [x] Suggest likely new course and allow one-click create.
+- [x] Build recognition confirmation page.
+- [x] Keep AI/mock suggestions editable before archive.
+- [x] Create linked `Notice` and `Todo` after confirmation.
+- [x] Clear recognition draft after archive.
+- [x] Add recognition provider abstraction.
+- [x] Add optional OpenAI/DeepSeek notice recognition route.
 
 ### Todos
 
-- [ ] Build todo list component.
-- [ ] Build todo item component.
-- [ ] Show deadline status.
-- [ ] Toggle todo done and pending.
-- [ ] Persist todo status changes.
-- [ ] Show source notice relationship when available.
+- [x] Build todo list and todo item components.
+- [x] Show deadline status.
+- [x] Toggle todo done/pending.
+- [x] Delete todos.
+- [x] Persist status changes.
+- [x] Group DDL on Dashboard.
 
 ### Search
 
-- [ ] Build global search input.
-- [ ] Implement search across course names.
-- [ ] Implement search across material file names.
-- [ ] Implement search across material tags.
-- [ ] Implement search across notice raw text.
-- [ ] Implement search across todo titles.
-- [ ] Show grouped search results.
-- [ ] Link search results to course detail.
-- [ ] Add empty state for no results.
+- [x] Build global search input.
+- [x] Search course names.
+- [x] Search material file names, tags, notes, course names.
+- [x] Search material `extractedText`.
+- [x] Search notice raw/original text.
+- [x] Search todo titles, deadline text, submit method, tags.
+- [x] Show grouped search results.
+- [x] Show result type.
+- [x] Show match field and snippet.
+- [x] Highlight keywords.
+- [x] Link results to material preview or course detail.
+- [x] Add empty state for no results.
 
-### Manual Verification
+## Manual Verification Checklist
 
+- [ ] Open `http://localhost:3000`.
+- [ ] Reset demo data.
 - [ ] Create a new course.
-- [ ] Add material to the course.
-- [ ] Paste a notice for the course.
-- [ ] Review mock recognition result.
+- [ ] Upload PDF and confirm preview/download works after refresh.
+- [ ] Upload image and confirm preview/download works after refresh.
+- [ ] Upload docx and confirm unsupported preview + download works.
+- [ ] Upload txt and confirm body text can be searched.
+- [ ] Paste a notice for a course.
+- [ ] Review recognition result.
 - [ ] Edit recognition result.
 - [ ] Archive recognition result.
 - [ ] Confirm notice appears in course detail.
 - [ ] Confirm todo appears in course detail.
-- [ ] Confirm search can find the new material.
-- [ ] Confirm search can find the new todo.
-- [ ] Refresh the page and confirm data remains.
+- [ ] Search a keyword and confirm grouped, highlighted results.
+- [ ] Delete material and confirm it disappears.
+- [ ] Delete course and confirm related materials/todos/notices disappear.
+- [ ] Run `npm run lint`.
+- [ ] Run `npm run build`.
 
-## Phase 2: MVP Polish
+## Next High-Value Tasks
 
+- [ ] Add PDF text extraction.
+- [ ] Add docx text extraction.
+- [ ] Support splitting one notice into multiple todos.
+- [ ] Show AI provider/confidence on confirmation page.
+- [ ] Add source relationship from todo back to notice snippet.
+- [ ] Add import/export for local demo data.
 - [ ] Improve mobile layout.
-- [ ] Improve empty states.
-- [ ] Improve deadline display.
-- [ ] Add material type badges.
-- [ ] Add tag styling.
-- [ ] Add better form validation messages.
-- [ ] Add reset demo data action.
-- [ ] Add README running instructions after project initialization.
-- [ ] Review Chinese UI copy.
-- [ ] Remove unused code.
 
-## Phase 3: Future Enhancements
+## Not In Current MVP
 
-- [ ] Replace mock recognition with real AI API.
-- [ ] Support extracting multiple todos from one notice.
-- [ ] Add real file upload metadata handling.
-- [ ] Add file content parsing.
-- [ ] Add OCR for screenshots.
-- [ ] Add calendar export.
-- [ ] Add backend database.
-- [ ] Add authentication.
-- [ ] Add cloud storage.
-- [ ] Add learning platform integrations.
+- [ ] Login/register.
+- [ ] Cloud storage.
+- [ ] Backend database.
+- [ ] QQ/WeChat automatic import.
+- [ ] Learning platform API integration.
+- [ ] OCR.
+- [ ] Vector database.
+- [ ] Multi-user collaboration.
+- [ ] Calendar sync.
+- [ ] Mobile app.
