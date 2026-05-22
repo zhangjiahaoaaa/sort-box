@@ -2,6 +2,7 @@ import type { Course, MaterialType } from "@/lib/types"
 
 export type MaterialRecognitionDraft = {
   courseId?: string
+  suggestedCourseName?: string
   type: MaterialType
   tags: string[]
   confidenceFlags: {
@@ -22,6 +23,25 @@ const typeRules: Array<{
   { type: "reading", keywords: ["阅读", "论文", "文献", "资料"] },
 ]
 
+const knownCoursePhrases = [
+  "模式识别",
+  "数据库系统",
+  "矩阵论",
+  "高等数学",
+  "大学英语",
+  "线性代数",
+  "概率论",
+  "操作系统",
+  "计算机网络",
+  "数据结构",
+  "软件工程",
+  "编译原理",
+  "人工智能",
+  "机器学习",
+  "数字图像处理",
+  "信号与系统",
+]
+
 export function recognizeMaterialFileName(
   fileName: string,
   courses: Course[],
@@ -31,11 +51,15 @@ export function recognizeMaterialFileName(
   const matchedCourse = courses.find((course) =>
     normalized.includes(course.name.toLowerCase()),
   )
+  const suggestedCourseName = matchedCourse
+    ? undefined
+    : inferSuggestedCourseName(nameWithoutExtension)
   const type = inferMaterialType(normalized)
-  const tags = inferTags(nameWithoutExtension, matchedCourse?.name)
+  const tags = inferTags(nameWithoutExtension, matchedCourse?.name || suggestedCourseName)
 
   return {
     courseId: matchedCourse?.id,
+    suggestedCourseName,
     type,
     tags,
     confidenceFlags: {
@@ -54,6 +78,60 @@ function inferMaterialType(normalizedFileName: string): MaterialType {
       ),
     )?.type || "other"
   )
+}
+
+function inferSuggestedCourseName(fileName: string) {
+  const firstSegment = fileName
+    .split(/[_\-\s.（）()【】\[\]]+/)
+    .map((segment) => segment.trim())
+    .find(Boolean)
+
+  if (!firstSegment) {
+    return undefined
+  }
+
+  const knownCourse = knownCoursePhrases.find((courseName) =>
+    firstSegment.includes(courseName),
+  )
+  if (knownCourse) {
+    return knownCourse
+  }
+
+  const cleaned = stripLikelyNamePrefix(
+    firstSegment
+      .split(/课程论文|课程设计|期末论文|结课论文|实验报告|报告模板|作业|实验|复习|期末|期中|论文|报告|模板|课件|ppt|PPT/)
+      [0]
+      ?.replace(/^(课程|科目|资料|作业|实验|复习|期末|期中)+/, "")
+      .trim() || "",
+  )
+
+  if (
+    !cleaned ||
+    cleaned.length < 2 ||
+    cleaned.length > 10 ||
+    /^\d+$/.test(cleaned) ||
+    /^(课程|科目|资料|作业|实验|复习|期末|期中|论文|报告|模板|课件)$/.test(cleaned)
+  ) {
+    return undefined
+  }
+
+  return cleaned
+}
+
+function stripLikelyNamePrefix(value: string) {
+  const courseShape =
+    /(识别|系统|数学|英语|物理|化学|概论|原理|导论|设计|结构|网络|工程|数据库|矩阵|代数|概率|统计|算法|编译|智能|学习)/
+
+  for (const nameLength of [3, 2]) {
+    if (value.length > nameLength + 2) {
+      const rest = value.slice(nameLength)
+      if (courseShape.test(rest)) {
+        return rest
+      }
+    }
+  }
+
+  return value
 }
 
 function inferTags(fileName: string, courseName?: string) {

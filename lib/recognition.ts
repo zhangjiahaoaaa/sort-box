@@ -81,13 +81,37 @@ function extractSuggestedCourseName(text: string, courses: Course[]) {
 
   for (const pattern of patterns) {
     const match = cleaned.match(pattern)
-    const candidate = match?.[1]?.replace(/^(请|各位|同学|关于)/, "")
-    if (candidate && !existingNames.has(candidate) && candidate.length >= 2) {
+    const candidate = sanitizeCourseCandidate(match?.[1])
+    if (candidate && !existingNames.has(candidate)) {
       return candidate
     }
   }
 
   return undefined
+}
+
+function sanitizeCourseCandidate(value?: string) {
+  if (!value) {
+    return undefined
+  }
+
+  const candidate = value
+    .replace(/^(请|各位|同学|关于|通知|本次|这次)+/, "")
+    .split(/下周|本周|这周|星期|周[一二三四五六日天1-7]?|今天|明天|后天|今晚|明晚|上午|中午|下午|晚上|需要|请|务必|将|于|在|前|之前|截止|提交|上传/)
+    [0]
+    ?.replace(/[，。！？:：；;、]+$/, "")
+    .trim()
+
+  if (
+    !candidate ||
+    candidate.length < 2 ||
+    candidate.length > 10 ||
+    /^(作业|实验|考试|论文|展示|报告|复习|课程|资料)$/.test(candidate)
+  ) {
+    return undefined
+  }
+
+  return candidate
 }
 
 function extractDeadline(text: string, referenceDate = new Date()): {

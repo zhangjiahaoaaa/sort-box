@@ -13,21 +13,26 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { PageHeader } from "@/components/common/PageHeader"
 import { Badge } from "@/components/ui/badge"
 import { materialTypeLabels, materialTypes } from "@/lib/constants"
+import { saveStoredFile } from "@/lib/file-store"
 import type { MaterialRecognitionDraft } from "@/lib/material-recognition"
 import { recognitionProvider } from "@/lib/recognition/provider"
 import { createId, nowIso, parseTags } from "@/lib/utils"
 import { useAppData } from "@/hooks/useAppData"
-import type { MaterialType } from "@/lib/types"
+import type { Course, MaterialType } from "@/lib/types"
+
+const courseColors = ["#0f766e", "#2563eb", "#d97706", "#7c3aed", "#be123c"]
 
 export default function AddMaterialPage() {
   const router = useRouter()
-  const { data, isReady, addMaterial } = useAppData()
+  const { data, isReady, addCourse, addMaterial } = useAppData()
   const [courseId, setCourseId] = useState("")
   const [fileName, setFileName] = useState("")
   const [type, setType] = useState<MaterialType>("courseware")
   const [tags, setTags] = useState("")
   const [note, setNote] = useState("")
   const [error, setError] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const [recognition, setRecognition] = useState<MaterialRecognitionDraft | null>(null)
 
   useEffect(() => {
@@ -60,10 +65,39 @@ export default function AddMaterialPage() {
   const courses = data.courses
   const selectedCourseName = courses.find((course) => course.id === courseId)?.name
 
+  function createCourseFromSuggestion() {
+    const suggestedName = recognition?.suggestedCourseName?.trim()
+    if (!suggestedName) {
+      return
+    }
+
+    const existingCourse = courses.find((course) => course.name === suggestedName)
+    if (existingCourse) {
+      setCourseId(existingCourse.id)
+      return
+    }
+
+    const timestamp = nowIso()
+    const course: Course = {
+      id: createId(),
+      name: suggestedName,
+      semester: "2025-2026 春季",
+      color: courseColors[Math.floor(Math.random() * courseColors.length)],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+
+    addCourse(course)
+    setCourseId(course.id)
+    setError("")
+  }
+
   async function handleFileChange(file?: File) {
     const nextFileName = file?.name || ""
+    setSelectedFile(file ?? null)
     setFileName(nextFileName)
     setRecognition(null)
+    setError("")
 
     if (!nextFileName) {
       return
@@ -81,35 +115,48 @@ export default function AddMaterialPage() {
     setTags(draft.tags.join("，"))
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!courseId) {
       setError("请选择资料所属课程。")
       return
     }
-    if (!fileName.trim()) {
-      setError("请选择文件，或手动补充文件名。")
+    if (!selectedFile) {
+      setError("请选择要保存到本地资料库的文件。")
       return
     }
 
-    addMaterial({
-      id: createId(),
-      courseId,
-      fileName: fileName.trim(),
-      type,
-      tags: parseTags(tags),
-      uploadedAt: nowIso(),
-      note: note.trim() || undefined,
-    })
+    setIsSaving(true)
+    setError("")
+    try {
+      const storedFile = await saveStoredFile(selectedFile)
+      const extractedText = await extractTextFromFile(selectedFile)
+      addMaterial({
+        id: createId(),
+        courseId,
+        fileName: fileName.trim() || storedFile.name,
+        fileId: storedFile.id,
+        mimeType: storedFile.type,
+        fileSize: storedFile.size,
+        type,
+        tags: parseTags(tags),
+        uploadedAt: nowIso(),
+        extractedText,
+        note: note.trim() || undefined,
+      })
 
-    router.push(`/courses/${courseId}`)
+      router.push(`/courses/${courseId}`)
+    } catch {
+      setError("文件保存到浏览器本地资料库失败，请换个文件或检查浏览器存储权限。")
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
         title="添加资料"
-        description="选择文件只会读取文件名；MVP 不保存文件内容，也不会上传到云端。"
+        description="文件会保存在本机浏览器 IndexedDB 中，刷新后仍可预览或下载；不会上传到云端。"
       />
 
       <Card>
@@ -155,31 +202,50 @@ export default function AddMaterialPage() {
                   </div>
                 </div>
                 <p className="mt-3 text-xs text-slate-500">
-                  这里只读取文件名用于推荐课程、类型和标签，不会上传或保存文件内容。
+                  系统会根据文件名推荐课程、类型和标签；文件本体只保存在当前浏览器本地。
                 </p>
               </div>
               {recognition ? (
-                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                  <Badge
-                    variant={recognition.courseId || selectedCourseName ? "success" : "warning"}
-                  >
-                    {recognition.courseId
-                      ? `推荐课程：${
-                          courses.find((course) => course.id === recognition.courseId)
-                            ?.name || "未知课程"
-                        }`
-                      : selectedCourseName
-                        ? `已使用课程：${selectedCourseName}`
-                        : "文件名未识别课程"}
-                  </Badge>
-                  <Badge variant={recognition.confidenceFlags.typeUncertain ? "warning" : "muted"}>
-                    推荐类型：{materialTypeLabels[recognition.type]}
-                  </Badge>
-                  {recognition.tags.length ? (
-                    <Badge variant="muted">推荐标签：{recognition.tags.join("，")}</Badge>
-                  ) : (
-                    <Badge variant="warning">未识别标签</Badge>
-                  )}
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                    <Badge
+                      variant={recognition.courseId || selectedCourseName ? "success" : "warning"}
+                    >
+                      {recognition.courseId
+                        ? `推荐课程：${
+                            courses.find((course) => course.id === recognition.courseId)
+                              ?.name || "未知课程"
+                          }`
+                        : selectedCourseName
+                          ? `已使用课程：${selectedCourseName}`
+                          : recognition.suggestedCourseName
+                            ? `疑似新课程：${recognition.suggestedCourseName}`
+                            : "文件名未识别课程"}
+                    </Badge>
+                    <Badge
+                      variant={recognition.confidenceFlags.typeUncertain ? "warning" : "muted"}
+                    >
+                      推荐类型：{materialTypeLabels[recognition.type]}
+                    </Badge>
+                    {recognition.tags.length ? (
+                      <Badge variant="muted">推荐标签：{recognition.tags.join("，")}</Badge>
+                    ) : (
+                      <Badge variant="warning">未识别标签</Badge>
+                    )}
+                  </div>
+                  {!recognition.courseId && !selectedCourseName && recognition.suggestedCourseName ? (
+                    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                      <span>检测到可能的新课程：{recognition.suggestedCourseName}</span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={createCourseFromSuggestion}
+                      >
+                        创建课程并使用
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </label>
@@ -219,10 +285,21 @@ export default function AddMaterialPage() {
             </label>
 
             {error ? <p className="text-sm text-red-600">{error}</p> : null}
-            <Button type="submit">保存资料</Button>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? "正在保存..." : "保存资料"}
+            </Button>
           </form>
         </CardContent>
       </Card>
     </div>
   )
+}
+
+async function extractTextFromFile(file: File) {
+  if (file.type !== "text/plain" && !file.name.toLowerCase().endsWith(".txt")) {
+    return undefined
+  }
+
+  const text = await file.text()
+  return text.trim() || undefined
 }

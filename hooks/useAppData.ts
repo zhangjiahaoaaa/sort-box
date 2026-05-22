@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { clearStoredFiles, deleteStoredFile, deleteStoredFiles } from "@/lib/file-store"
 import { readAppData, resetAppData, writeAppData } from "@/lib/storage"
 import type { AppData, Course, Material, Notice, Todo } from "@/lib/types"
 
@@ -68,14 +69,21 @@ export function useAppData() {
       },
       deleteMaterial(materialId: string) {
         setData((current) =>
-          current
-            ? {
+          {
+            if (!current) {
+              return current
+            }
+
+            const material = current.materials.find((item) => item.id === materialId)
+            void deleteStoredFile(material?.fileId)
+
+            return {
                 ...current,
                 materials: current.materials.filter(
                   (material) => material.id !== materialId,
                 ),
               }
-            : current,
+          },
         )
       },
       deleteTodo(todoId: string) {
@@ -90,8 +98,17 @@ export function useAppData() {
       },
       deleteCourse(courseId: string) {
         setData((current) =>
-          current
-            ? {
+          {
+            if (!current) {
+              return current
+            }
+
+            const fileIds = current.materials
+              .filter((material) => material.courseId === courseId)
+              .map((material) => material.fileId)
+            void deleteStoredFiles(fileIds)
+
+            return {
                 courses: current.courses.filter((course) => course.id !== courseId),
                 materials: current.materials.filter(
                   (material) => material.courseId !== courseId,
@@ -99,10 +116,11 @@ export function useAppData() {
                 todos: current.todos.filter((todo) => todo.courseId !== courseId),
                 notices: current.notices.filter((notice) => notice.courseId !== courseId),
               }
-            : current,
+          },
         )
       },
       resetDemoData() {
+        void clearStoredFiles()
         setData(resetAppData())
       },
     }),

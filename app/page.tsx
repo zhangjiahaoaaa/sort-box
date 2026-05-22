@@ -72,7 +72,7 @@ export default function DashboardPage() {
       <GlobalSearch value={query} onChange={setQuery} />
 
       {isSearching ? (
-        <SearchResults data={data} results={results} />
+        <SearchResults data={data} results={results} query={query} />
       ) : (
         <>
           <DashboardStats data={data} />

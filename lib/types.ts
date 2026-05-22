@@ -21,9 +21,13 @@ export type Material = {
   id: string
   courseId: string
   fileName: string
+  fileId?: string
+  mimeType?: string
+  fileSize?: number
   type: MaterialType
   tags: string[]
   uploadedAt: string
+  extractedText?: string
   note?: string
 }
 
@@ -34,6 +38,7 @@ export type Todo = {
   courseId: string
   title: string
   deadline?: string
+  deadlineText?: string
   submitMethod?: string
   status: TodoStatus
   tags: string[]
@@ -45,6 +50,7 @@ export type Todo = {
 export type Notice = {
   id: string
   rawText: string
+  originalText?: string
   courseId: string
   extractedTitle: string
   extractedDeadline?: string
@@ -77,8 +83,20 @@ export type AppData = {
 }
 
 export type SearchResultGroup = {
-  courses: Course[]
-  materials: Material[]
-  todos: Todo[]
-  notices: Notice[]
+  courses: Array<SearchResultItem<Course>>
+  materials: Array<SearchResultItem<Material>>
+  todos: Array<SearchResultItem<Todo>>
+  notices: Array<SearchResultItem<Notice>>
+}
+
+export type SearchMatch = {
+  field: string
+  label: string
+  value: string
+  snippet?: string
+}
+
+export type SearchResultItem<T> = {
+  item: T
+  matches: SearchMatch[]
 }

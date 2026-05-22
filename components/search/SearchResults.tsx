@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TagList } from "@/components/common/TagList"
 import { materialTypeLabels } from "@/lib/constants"
+import type { SearchMatch } from "@/lib/types"
 import type { AppData, SearchResultGroup } from "@/lib/types"
 
 type SearchResultsProps = {
   data: AppData
   results: SearchResultGroup
+  query: string
 }
 
-export function SearchResults({ data, results }: SearchResultsProps) {
+export function SearchResults({ data, results, query }: SearchResultsProps) {
   const total =
     results.courses.length +
     results.materials.length +
@@ -30,24 +32,28 @@ export function SearchResults({ data, results }: SearchResultsProps) {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <ResultCard title={`课程 · ${results.courses.length}`}>
-        {results.courses.map((course) => (
-          <ResultLink key={course.id} href={`/courses/${course.id}`}>
-            <p className="font-medium text-slate-950">{course.name}</p>
-            <p className="text-sm text-slate-500">{course.teacher || "未填写老师"}</p>
+        {results.courses.map((result) => (
+          <ResultLink key={result.item.id} href={`/courses/${result.item.id}`}>
+            <Badge variant="success">课程</Badge>
+            <p className="mt-2 font-medium text-slate-950">{result.item.name}</p>
+            <p className="text-sm text-slate-500">{result.item.teacher || "未填写老师"}</p>
+            <MatchList matches={result.matches} query={query} />
           </ResultLink>
         ))}
       </ResultCard>
 
       <ResultCard title={`资料 · ${results.materials.length}`}>
-        {results.materials.map((material) => {
+        {results.materials.map((result) => {
+          const material = result.item
           const course = data.courses.find((item) => item.id === material.courseId)
           return (
-            <ResultLink key={material.id} href={`/courses/${material.courseId}`}>
+            <ResultLink key={material.id} href={`/materials/${material.id}`}>
               <Badge variant="default">资料</Badge>
               <p className="font-medium text-slate-950">{material.fileName}</p>
               <p className="text-sm text-slate-500">
                 {course?.name || "未知课程"} · {materialTypeLabels[material.type]}
               </p>
+              <MatchList matches={result.matches} query={query} />
               <div className="mt-2">
                 <TagList tags={material.tags} />
               </div>
@@ -57,13 +63,15 @@ export function SearchResults({ data, results }: SearchResultsProps) {
       </ResultCard>
 
       <ResultCard title={`待办 · ${results.todos.length}`}>
-        {results.todos.map((todo) => {
+        {results.todos.map((result) => {
+          const todo = result.item
           const course = data.courses.find((item) => item.id === todo.courseId)
           return (
             <ResultLink key={todo.id} href={`/courses/${todo.courseId}`}>
               <Badge variant="warning">待办</Badge>
               <p className="font-medium text-slate-950">{todo.title}</p>
               <p className="text-sm text-slate-500">{course?.name || "未知课程"}</p>
+              <MatchList matches={result.matches} query={query} />
               <div className="mt-2">
                 <TagList tags={todo.tags} />
               </div>
@@ -73,7 +81,8 @@ export function SearchResults({ data, results }: SearchResultsProps) {
       </ResultCard>
 
       <ResultCard title={`通知 · ${results.notices.length}`}>
-        {results.notices.map((notice) => {
+        {results.notices.map((result) => {
+          const notice = result.item
           const course = data.courses.find((item) => item.id === notice.courseId)
           return (
             <ResultLink key={notice.id} href={`/courses/${notice.courseId}`}>
@@ -82,6 +91,7 @@ export function SearchResults({ data, results }: SearchResultsProps) {
               <p className="line-clamp-2 text-sm leading-6 text-slate-500">
                 {course?.name || "未知课程"} · {notice.rawText}
               </p>
+              <MatchList matches={result.matches} query={query} />
             </ResultLink>
           )
         })}
@@ -89,6 +99,53 @@ export function SearchResults({ data, results }: SearchResultsProps) {
     </div>
   )
 }
+
+function MatchList({ matches, query }: { matches: SearchMatch[]; query: string }) {
+  const visibleMatches = matches.slice(0, 2)
+
+  return (
+    <div className="mt-2 space-y-1">
+      {visibleMatches.map((match) => (
+        <p key={`${match.field}-${match.value}`} className="text-xs leading-5 text-slate-500">
+          <span className="font-medium text-slate-700">{match.label}：</span>
+          <HighlightedText text={match.snippet || match.value} query={query.trim()} />
+        </p>
+      ))}
+    </div>
+  )
+}
+
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  if (!query) {
+    return text
+  }
+
+  const lowerText = text.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  const parts: React.ReactNode[] = []
+  let cursor = 0
+  let index = lowerText.indexOf(lowerQuery)
+
+  while (index >= 0) {
+    if (index > cursor) {
+      parts.push(text.slice(cursor, index))
+    }
+    parts.push(
+      <mark key={`${index}-${query}`} className="rounded bg-amber-100 px-0.5 text-amber-900">
+        {text.slice(index, index + query.length)}
+      </mark>,
+    )
+    cursor = index + query.length
+    index = lowerText.indexOf(lowerQuery, cursor)
+  }
+
+  if (cursor < text.length) {
+    parts.push(text.slice(cursor))
+  }
+
+  return <>{parts}</>
+}
+
 
 function ResultCard({
   title,

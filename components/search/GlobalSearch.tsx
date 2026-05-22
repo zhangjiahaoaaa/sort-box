@@ -13,7 +13,7 @@ export function GlobalSearch({ value, onChange }: GlobalSearchProps) {
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="搜索课程、文件名、标签、通知内容或 DDL 标题"
+        placeholder="期末救命搜索：课程、文件名、标签、通知、DDL、txt 正文"
         className="h-12 pl-10 text-base"
       />
     </div>
