@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { Trash2 } from "lucide-react"
+import { Flame, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/common/EmptyState"
 import { CourseHeader } from "@/components/courses/CourseHeader"
@@ -69,10 +69,16 @@ export default function CourseDetailPage() {
       <CourseHeader course={currentCourse} />
 
       <div className="flex flex-wrap gap-2">
+        <Button asChild>
+          <Link href={`/courses/${currentCourse.id}/review`}>
+            <Flame className="h-4 w-4" />
+            进入复习模式
+          </Link>
+        </Button>
         <Button asChild variant="secondary">
           <Link href={`/add/material?courseId=${currentCourse.id}`}>添加这门课的资料</Link>
         </Button>
-        <Button asChild>
+        <Button asChild variant="secondary">
           <Link href={`/add/notice?courseId=${currentCourse.id}`}>粘贴这门课的通知</Link>
         </Button>
         <Button

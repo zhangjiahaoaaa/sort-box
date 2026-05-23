@@ -17,6 +17,8 @@ export type MaterialType =
   | "reading"
   | "other"
 
+export type MaterialStatus = "new" | "viewed" | "reviewed"
+
 export type Material = {
   id: string
   courseId: string
@@ -25,6 +27,8 @@ export type Material = {
   mimeType?: string
   fileSize?: number
   type: MaterialType
+  status: MaterialStatus
+  isImportant: boolean
   tags: string[]
   uploadedAt: string
   extractedText?: string

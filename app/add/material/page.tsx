@@ -139,6 +139,8 @@ export default function AddMaterialPage() {
         mimeType: storedFile.type,
         fileSize: storedFile.size,
         type,
+        status: "new",
+        isImportant: false,
         tags: parseTags(tags),
         uploadedAt: nowIso(),
         extractedText,

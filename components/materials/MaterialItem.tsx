@@ -11,6 +11,18 @@ import { downloadStoredFile } from "@/lib/file-store"
 import type { Material } from "@/lib/types"
 import { formatFileSize, formatMimeType } from "@/lib/utils"
 
+const materialStatusLabels = {
+  new: "未查看",
+  viewed: "已查看",
+  reviewed: "已复习",
+}
+
+const materialStatusVariants = {
+  new: "warning",
+  viewed: "muted",
+  reviewed: "success",
+} as const
+
 export function MaterialItem({
   material,
   onDelete,
@@ -30,6 +42,10 @@ export function MaterialItem({
               {material.fileName}
             </p>
             <Badge>{materialTypeLabels[material.type]}</Badge>
+            <Badge variant={materialStatusVariants[material.status]}>
+              {materialStatusLabels[material.status]}
+            </Badge>
+            {material.isImportant ? <Badge variant="danger">重点</Badge> : null}
             <Badge variant={material.fileId ? "success" : "warning"}>
               {material.fileId ? "本地已保存" : "仅有记录"}
             </Badge>

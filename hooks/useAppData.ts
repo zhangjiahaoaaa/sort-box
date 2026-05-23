@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { clearStoredFiles, deleteStoredFile, deleteStoredFiles } from "@/lib/file-store"
 import { readAppData, resetAppData, writeAppData } from "@/lib/storage"
-import type { AppData, Course, Material, Notice, Todo } from "@/lib/types"
+import type { AppData, Course, Material, MaterialStatus, Notice, Todo } from "@/lib/types"
 
 export function useAppData() {
   const [data, setData] = useState<AppData | null>(null)
@@ -45,6 +45,60 @@ export function useAppData() {
                 ...current,
                 notices: [notice, ...current.notices],
                 todos: [todo, ...current.todos],
+              }
+            : current,
+        )
+      },
+      updateMaterialLearningState(
+        materialId: string,
+        updates: Partial<Pick<Material, "status" | "isImportant">>,
+      ) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                materials: current.materials.map((material) =>
+                  material.id === materialId
+                    ? {
+                        ...material,
+                        ...updates,
+                      }
+                    : material,
+                ),
+              }
+            : current,
+        )
+      },
+      setMaterialStatus(materialId: string, status: MaterialStatus) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                materials: current.materials.map((material) =>
+                  material.id === materialId
+                    ? {
+                        ...material,
+                        status,
+                      }
+                    : material,
+                ),
+              }
+            : current,
+        )
+      },
+      toggleMaterialImportant(materialId: string) {
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                materials: current.materials.map((material) =>
+                  material.id === materialId
+                    ? {
+                        ...material,
+                        isImportant: !material.isImportant,
+                      }
+                    : material,
+                ),
               }
             : current,
         )

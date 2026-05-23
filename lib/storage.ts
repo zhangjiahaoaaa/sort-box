@@ -2,10 +2,25 @@
 
 import { appDataKey, recognitionDraftKey } from "@/lib/constants"
 import { demoData } from "@/lib/mock-data"
-import type { AppData, RecognitionDraft } from "@/lib/types"
+import type { AppData, Material, RecognitionDraft } from "@/lib/types"
 
 function cloneData(data: AppData): AppData {
   return JSON.parse(JSON.stringify(data)) as AppData
+}
+
+function normalizeMaterial(material: Material): Material {
+  return {
+    ...material,
+    status: material.status || "new",
+    isImportant: Boolean(material.isImportant),
+  }
+}
+
+function normalizeAppData(data: AppData): AppData {
+  return {
+    ...data,
+    materials: data.materials.map(normalizeMaterial),
+  }
 }
 
 function isAppData(value: unknown): value is AppData {
@@ -30,7 +45,7 @@ export function readAppData(): AppData {
   try {
     const raw = window.localStorage.getItem(appDataKey)
     if (!raw) {
-      const seeded = cloneData(demoData)
+      const seeded = normalizeAppData(cloneData(demoData))
       window.localStorage.setItem(appDataKey, JSON.stringify(seeded))
       return seeded
     }
@@ -40,9 +55,11 @@ export function readAppData(): AppData {
       throw new Error("Invalid app data")
     }
 
-    return parsed
+    const normalized = normalizeAppData(parsed)
+    window.localStorage.setItem(appDataKey, JSON.stringify(normalized))
+    return normalized
   } catch {
-    const fallback = cloneData(demoData)
+    const fallback = normalizeAppData(cloneData(demoData))
     window.localStorage.setItem(appDataKey, JSON.stringify(fallback))
     return fallback
   }
@@ -57,7 +74,7 @@ export function writeAppData(data: AppData) {
 }
 
 export function resetAppData(): AppData {
-  const seeded = cloneData(demoData)
+  const seeded = normalizeAppData(cloneData(demoData))
   if (typeof window !== "undefined") {
     window.localStorage.setItem(appDataKey, JSON.stringify(seeded))
     window.localStorage.removeItem(recognitionDraftKey)
